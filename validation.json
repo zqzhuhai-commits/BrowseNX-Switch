@@ -1,0 +1,20 @@
+{
+  "nsp_sha256": "b16bbef34a80344a2880dfa70cd6569090a04ff7501f93c5a75a9d6907203a55",
+  "nsp_size_bytes": 23750872,
+  "title_id": "01f0b05e20261000",
+  "nca_count": 3,
+  "romfs_files_verified": 77,
+  "checks": {
+    "nca_content_hashes": "passed",
+    "nca_filename_hashes": "passed",
+    "nso_segment_hashes": "passed",
+    "nro_to_nso_byte_comparison": "passed",
+    "romfs_exact_comparison": "passed",
+    "npdm": "passed",
+    "control_metadata": "passed",
+    "cnmt_content_links": "passed"
+  },
+  "nintendo_signatures": "unsigned homebrew; requires compatible CFW environment",
+  "hardware_tested": false,
+  "firmware_22_5_0_tested": false
+}

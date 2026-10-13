@@ -1,0 +1,3 @@
+[submodule "vendor/netsurf-switch"]
+	path = vendor/netsurf-switch
+	url = https://github.com/etonedemid/netsurf-switch.git

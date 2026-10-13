@@ -1,0 +1,43 @@
+diff --git a/cnmt.c b/cnmt.c
+index a217ce1..d5794b1 100644
+--- a/cnmt.c
++++ b/cnmt.c
+@@ -5,6 +5,7 @@
+ #include "cnmt.h"
+ #include "filepath.h"
+ #include "utils.h"
++#include "sha.h"
+ 
+ void cnmt_create(cnmt_ctx_t *cnmt_ctx, filepath_t *cnmt_filepath, hbp_settings_t *settings)
+ {
+@@ -43,7 +44,7 @@ void cnmt_create(cnmt_ctx_t *cnmt_ctx, filepath_t *cnmt_filepath, hbp_settings_t
+     }
+ 
+     // Write content records
+-    uint8_t digest[0x20] = {0}; // Unknown value
++    uint8_t digest[0x20] = {0};
+     printf("Writing content records\n");
+     fwrite(&cnmt_ctx->cnmt_content_records[0], sizeof(cnmt_content_record_t), 1, cnmt_file);
+     fwrite(&cnmt_ctx->cnmt_content_records[1], sizeof(cnmt_content_record_t), 1, cnmt_file);
+@@ -51,7 +52,19 @@ void cnmt_create(cnmt_ctx_t *cnmt_ctx, filepath_t *cnmt_filepath, hbp_settings_t
+         fwrite(&cnmt_ctx->cnmt_content_records[3], sizeof(cnmt_content_record_t), 1, cnmt_file);
+     if (settings->legalinfo_romfs_dir.valid == VALIDITY_VALID)
+         fwrite(&cnmt_ctx->cnmt_content_records[4], sizeof(cnmt_content_record_t), 1, cnmt_file);    
++    /* CNMT digest covers the header, extended header and content records. */
++    sha_ctx_t *sha_ctx = new_sha_ctx(HASH_TYPE_SHA256, 0);
++    sha_update(sha_ctx, &cnmt_ctx->cnmt_header, sizeof(cnmt_header_t));
++    sha_update(sha_ctx, &cnmt_ext_header, sizeof(cnmt_extended_application_header_t));
++    sha_update(sha_ctx, &cnmt_ctx->cnmt_content_records[0], sizeof(cnmt_content_record_t));
++    sha_update(sha_ctx, &cnmt_ctx->cnmt_content_records[1], sizeof(cnmt_content_record_t));
++    if (settings->htmldoc_romfs_dir.valid == VALIDITY_VALID)
++        sha_update(sha_ctx, &cnmt_ctx->cnmt_content_records[3], sizeof(cnmt_content_record_t));
++    if (settings->legalinfo_romfs_dir.valid == VALIDITY_VALID)
++        sha_update(sha_ctx, &cnmt_ctx->cnmt_content_records[4], sizeof(cnmt_content_record_t));
++    sha_get_hash(sha_ctx, digest);
++    free_sha_ctx(sha_ctx);
+     fwrite(digest, 1, 0x20, cnmt_file);
+ 
+     fclose(cnmt_file);
+-}
+\ No newline at end of file
++}

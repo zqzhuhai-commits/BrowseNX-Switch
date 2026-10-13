@@ -1,0 +1,31 @@
+name: Assemble and publish standalone browser NSP
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'scripts/assemble_nsp.py'
+      - '.github/workflows/publish.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble verified NSP
+        run: python3 scripts/assemble_nsp.py
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetSurf-Switch-standalone-NSP
+          path: dist/*.nsp
+      - name: Publish experimental release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view v0.2.0-nsp1 >/dev/null 2>&1; then
+            gh release create v0.2.0-nsp1 --target "$GITHUB_SHA" --prerelease --title 'NetSurf 浏览器 NSP 测试版' --notes-file RELEASE-NOTES.md
+          fi
+          gh release upload v0.2.0-nsp1 dist/*.nsp validation.json SHA256SUMS --clobber
